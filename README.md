@@ -124,11 +124,16 @@ Skills teach Cursor / Claude to run Cybrot Gate from chat.
 
 ### Install for Cursor
 
-Skills are in [`.cursor/skills/`](.cursor/skills/). Copy into your app:
+Skills are in [`.cursor/skills/`](.cursor/skills/). From **your app repo root**:
 
 ```bash
-cp -R .cursor/skills/cybrot-* /path/to/your-app/.cursor/skills/
+mkdir -p .cursor/skills
+# If Cybrot-CLI is cloned at ~/Cybrot-CLI:
+cp -R ~/Cybrot-CLI/.cursor/skills/cybrot-* .cursor/skills/
 ```
+
+Destination is `.cursor/skills/` (not `.cursor/skills/.cursor`).  
+You should see folders like `.cursor/skills/cybrot-gate`, `cybrot-scan`, etc.
 
 Then ask: *“Run Cybrot Gate on this app”* or *“Fix the critical Cybrot findings and verify.”*
 
