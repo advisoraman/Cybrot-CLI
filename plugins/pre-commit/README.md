@@ -1,15 +1,9 @@
-# Cybrot Gate pre-commit plugin
-#
-# Mirrors StackHawk “scan before you ship” — runs a fast local gate on push.
-#
-## Setup
+# pre-commit — Cybrot Gate
 
-1. Install CLI: `cd cli && npm link`
-2. Ensure **Docker is running** (scanners run in `cybrot/gate-tools`)
-3. Copy hooks into your app repo `.pre-commit-config.yaml` — see `.pre-commit-config.snippet.yaml`
-4. `pre-commit install --hook-type pre-push`
+Fast local gate before push.
 
-## What it does
+```yaml
+# Add to .pre-commit-config.yaml — see .pre-commit-config.snippet.yaml
+```
 
-On `git push`, runs `cybrot scan --sast --secrets --fail-on high --no-upload`
-(Semgrep/Gitleaks inside Docker). Exit code 2 blocks the push when high/critical findings exist.
+Runs a local Cybrot Gate scan via Docker. Exit code 2 blocks the push when high/critical findings exist.

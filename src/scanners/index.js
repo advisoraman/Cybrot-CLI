@@ -8,7 +8,7 @@ import { assertDocker, ensureImage, TOOLS_IMAGE, ZAP_IMAGE } from './docker-runn
 
 /**
  * Orchestrate enabled scanners and return normalized findings + tool summaries.
- * Docker is mandatory — tools run inside cybrot/gate-tools (+ ZAP for DAST).
+ * Docker is mandatory — scanners run inside Cybrot managed images.
  */
 export async function runLocalScanners({
   workspaceDir,
@@ -75,7 +75,7 @@ export async function runLocalScanners({
   if (want.dast) {
     if (!target) {
       tools.push({
-        name: 'dast/zap',
+        name: 'dast',
         findings: 0,
         error: 'No target URL (pass --target or set application.target)',
       });

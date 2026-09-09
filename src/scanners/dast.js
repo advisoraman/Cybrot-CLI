@@ -6,7 +6,7 @@ import { makeFinding, normalizeSeverity } from '../normalizer/index.js';
 import { assertDocker, ensureImage, ZAP_IMAGE } from './docker-runner.js';
 
 /**
- * Local DAST via Dockerized ZAP baseline against a running target.
+ * Local DAST against a running target (managed Docker image).
  * Rewrites localhost → host.docker.internal (macOS/Windows) or host gateway (Linux).
  */
 export async function runDast(targetUrl, opts = {}) {
@@ -18,13 +18,13 @@ export async function runDast(targetUrl, opts = {}) {
   try {
     target = new URL(targetUrl);
   } catch {
-    return { name: 'dast/zap', findings: [], error: `Invalid target URL: ${targetUrl}` };
+    return { name: 'dast', findings: [], error: `Invalid target URL: ${targetUrl}` };
   }
 
   // Authorization guard: only localhost / private / explicitly authorized remote.
   if (!opts.authorized && !isLocalOrPrivate(target)) {
     return {
-      name: 'dast/zap',
+      name: 'dast',
       findings: [],
       error: 'Remote targets require --authorize (confirm you own/are allowed to scan this host)',
     };
@@ -35,7 +35,7 @@ export async function runDast(targetUrl, opts = {}) {
   const reportFile = path.join(reportDir, 'zap-report.json');
   const duration = parseDuration(opts.maxDuration || '5m');
 
-  log(`  Running ZAP baseline against ${dockerTarget}…`);
+  log(`  Running application scan against ${dockerTarget}…`);
 
   const dockerArgs = [
     'run', '--rm',
@@ -67,7 +67,7 @@ export async function runDast(targetUrl, opts = {}) {
   try {
     doc = JSON.parse(await fs.readFile(reportFile, 'utf8'));
   } catch {
-    // ZAP may leave report empty on hard failure
+    // Engine may leave report empty on hard failure
   } finally {
     try {
       await fs.rm(reportDir, { recursive: true, force: true });
@@ -78,9 +78,9 @@ export async function runDast(targetUrl, opts = {}) {
 
   if (!doc) {
     return {
-      name: 'dast/zap',
+      name: 'dast',
       findings: [],
-      error: result.error || result.stderr?.slice(0, 200) || 'ZAP produced no report (is the target reachable?)',
+      error: result.error || result.stderr?.slice(0, 200) || 'Application scan produced no report (is the target reachable?)',
     };
   }
 
@@ -95,7 +95,7 @@ export async function runDast(targetUrl, opts = {}) {
             severity: zapRiskToSeverity(alert.riskcode ?? alert.risk),
             confidence: zapConfidence(alert.confidence),
             source: 'dast',
-            tool: 'zap-baseline',
+            tool: 'cybrot-dast',
             cwe_id: alert.cweid && alert.cweid !== '-1' ? `CWE-${alert.cweid}` : null,
             endpoint_url: inst.uri || site['@name'] || targetUrl,
             http_method: inst.method || 'GET',
@@ -117,10 +117,10 @@ export async function runDast(targetUrl, opts = {}) {
   }
 
   if (!result.ok && findings.length === 0) {
-    logErr(`  ZAP exit: ${result.code} — ${result.stderr?.slice(0, 120) || ''}`);
+    logErr(`  Application scan exit: ${result.code} — ${result.stderr?.slice(0, 120) || ''}`);
   }
 
-  return { name: 'dast/zap', findings, error: null };
+  return { name: 'dast', findings, error: null };
 }
 
 function hostNetworkArgs() {

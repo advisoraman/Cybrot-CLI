@@ -23,5 +23,5 @@ cybrot init
 ## Notes
 
 - Config file is `cybrot.yml` (not hawk.yml / clearscan.yml).
-- Local scanners run in Docker (`cybrot/gate-tools` + ZAP). Docker is mandatory.
+- Local scanners require Docker. Docker is mandatory.
 - Cloud upload requires `cybrot login`.

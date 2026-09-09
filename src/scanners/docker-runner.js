@@ -63,7 +63,7 @@ export async function ensureImage(image, { pull = true } = {}) {
     fail(
       `Failed to pull Docker image: ${image}\n` +
         `  ${pulled.stderr?.slice(0, 300) || pulled.error || ''}\n` +
-        '  Build locally: docker build -f docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .\n' +
+        '  Build locally: docker build -f cli/docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .\n' +
         '  Then: export CYBROT_TOOLS_IMAGE=cybrot/gate-tools:local'
     );
   }

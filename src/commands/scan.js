@@ -18,7 +18,7 @@ import { buildScanPayload, printJsonReport } from '../output/json.js';
 import { printSarif } from '../output/sarif.js';
 import { uploadLocalResults } from '../cloud/ingest.js';
 import { runCloudScan } from '../cloud/cloud-scan.js';
-import { doctorDockerStatus, TOOLS_IMAGE, ZAP_IMAGE } from '../scanners/docker-runner.js';
+import { doctorDockerStatus, TOOLS_IMAGE } from '../scanners/docker-runner.js';
 
 export async function cmdScan(flags, positional) {
   // Legacy / explicit cloud worker path
@@ -163,10 +163,10 @@ export async function cmdDoctor() {
   else {
     log(`⚠ tools image: not pulled yet (${TOOLS_IMAGE})`);
     log('  First `cybrot scan` will pull it, or build:');
-    log('  docker build -f docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .');
+    log('  docker build -f cli/docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .');
     log('  export CYBROT_TOOLS_IMAGE=cybrot/gate-tools:local');
   }
-  if (st.zapImage) log(`✓ zap image: ${st.zapImage}`);
-  else log(`⚠ zap image: not pulled yet (${ZAP_IMAGE}) — pulled on first DAST scan`);
-  log('\nRequired: Node 18+ and Docker. Semgrep/Gitleaks/Trivy run inside the tools image.\n');
+  if (st.zapImage) log('✓ runtime scanner image: ready');
+  else log('⚠ runtime scanner image: not pulled yet — pulled on first application scan');
+  log('\nRequired: Node 18+ and Docker. Scanners run inside Cybrot managed images.\n');
 }

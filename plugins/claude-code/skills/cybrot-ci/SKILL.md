@@ -9,7 +9,7 @@ Wire Cybrot into CI as a security gate.
 
 ## Templates / plugins
 
-Cybrot Gate CI pack (StackHawk hawkscan-action style):
+Cybrot Gate CI pack :
 
 - `cli/plugins/github-action/` — composite Action + `workflow.example.yml`
 - `cli/ci/github-actions-cybrot.yml` — full workflow

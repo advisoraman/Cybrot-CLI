@@ -8,7 +8,7 @@ export async function runSecrets(workspaceDir, opts = {}) {
   const reportName = `gitleaks-${Date.now()}.json`;
   const hostReport = path.join(workspaceDir, '.cybrot', reportName);
 
-  log('  Running Gitleaks in Docker…');
+  log('  Scanning for secrets…');
   const args = [
     'gitleaks',
     'dir',
@@ -40,7 +40,7 @@ export async function runSecrets(workspaceDir, opts = {}) {
       severity: 'high',
       confidence: 'high',
       source: 'secrets',
-      tool: 'gitleaks',
+      tool: 'cybrot-secrets',
       cwe_id: 'CWE-798',
       file_path: stripSrc(l.File),
       line_number: l.StartLine ?? null,
@@ -53,7 +53,7 @@ export async function runSecrets(workspaceDir, opts = {}) {
   );
 
   return {
-    name: 'secrets/gitleaks',
+    name: 'secrets',
     findings,
     error: result.ok || findings.length ? null : result.error || result.stderr?.slice(0, 200) || null,
   };

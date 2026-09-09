@@ -4,12 +4,12 @@ import { log } from '../util.js';
 import { makeFinding, normalizeSeverity } from '../normalizer/index.js';
 import { runInToolsContainer } from './docker-runner.js';
 
-/** SCA via Trivy inside the Cybrot Gate tools Docker image. */
+/** Dependency / SCA scan via Cybrot tools image. */
 export async function runSca(workspaceDir, opts = {}) {
   const reportName = `trivy-${Date.now()}.json`;
   const hostReport = path.join(workspaceDir, '.cybrot', reportName);
 
-  log('  Running Trivy in Docker…');
+  log('  Checking dependencies…');
   const args = [
     'trivy',
     'fs',
@@ -31,9 +31,9 @@ export async function runSca(workspaceDir, opts = {}) {
     doc = JSON.parse(await fs.readFile(hostReport, 'utf8'));
   } catch {
     return {
-      name: 'sca/trivy',
+      name: 'sca',
       findings: [],
-      error: result.error || result.stderr?.slice(0, 200) || 'Could not parse Trivy output',
+      error: result.error || result.stderr?.slice(0, 200) || 'Could not parse dependency scan output',
     };
   } finally {
     fs.unlink(hostReport).catch(() => {});
@@ -48,7 +48,7 @@ export async function runSca(workspaceDir, opts = {}) {
           severity: normalizeSeverity(v.Severity),
           confidence: 'high',
           source: 'sca',
-          tool: 'trivy',
+          tool: 'cybrot-sca',
           cve_id: v.VulnerabilityID || null,
           cwe_id: Array.isArray(v.CweIDs) ? v.CweIDs[0] : null,
           file_path: stripSrc(res.Target) || res.Target || null,
@@ -66,7 +66,7 @@ export async function runSca(workspaceDir, opts = {}) {
     }
   }
 
-  return { name: 'sca/trivy', findings, error: null };
+  return { name: 'sca', findings, error: null };
 }
 
 function stripSrc(p) {

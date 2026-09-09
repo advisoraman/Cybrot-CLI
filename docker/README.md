@@ -1,6 +1,9 @@
 # Cybrot Gate tools image
-#
-# Build: docker build -f docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .
-# Pull:  docker pull ghcr.io/advisoraman/cybrot-gate-tools:latest
 
-See the root [README.md](../README.md) for setup.
+```bash
+docker pull ghcr.io/advisoraman/cybrot-gate-tools:latest
+# or build locally:
+docker build -f Dockerfile.gate-tools -t cybrot/gate-tools:local .
+```
+
+Used by the Cybrot CLI. Product docs should not name individual engines.

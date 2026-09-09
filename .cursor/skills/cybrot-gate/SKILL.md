@@ -1,11 +1,11 @@
 ---
 name: cybrot-gate
-description: Cybrot Gate umbrella skill — local security scan, deployment decision, fix, and verify before shipping. Use when the user mentions Cybrot Gate, security gate, StackHawk-like scan, or deploy readiness.
+description: Cybrot Gate umbrella skill — local security scan, deployment decision, fix, and verify before shipping. Use when the user mentions Cybrot Gate, security gate, scan, or deploy readiness.
 ---
 
 # Cybrot Gate
 
-Cybrot Gate is the local developer security workflow (StackHawk-style):
+Cybrot Gate is the local developer security workflow:
 
 ```text
 Write → Scan locally → Decide → Fix → Verify → Deploy

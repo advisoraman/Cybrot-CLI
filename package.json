@@ -1,7 +1,7 @@
 {
   "name": "cybrot",
   "version": "2.0.0",
-  "description": "Cybrot Gate CLI — local SAST/secrets/SCA/DAST via Docker, deploy decisions, cloud upload, CI plugins, and AI agent skills.",
+  "description": "Cybrot Gate CLI \u2014 local security scanning with deploy decisions, cloud upload, CI plugins, and AI agent skills. Requires Node 18+ and Docker.",
   "type": "module",
   "bin": {
     "cybrot": "./bin/cybrot.mjs"

@@ -10,7 +10,7 @@ Query Cybrot Cloud for scan history and findings.
 ## Auth
 
 ```bash
-cybrot login --api http://localhost:3000   # or https://cybrot.com
+cybrot login --api http://localhost:3000 # or https://cybrot.com
 ```
 
 Token stored in `~/.cybrot/config.json`.

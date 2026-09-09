@@ -9,7 +9,7 @@ export async function runSast(workspaceDir, opts = {}) {
     ? (process.env.SEMGREP_DETAILED_CONFIG || 'p/security-audit').split(',')[0]
     : process.env.SEMGREP_CONFIG || 'p/default';
 
-  log(`  Running Semgrep in Docker (${detailed ? 'detailed' : 'quick'})…`);
+  log(`  Running code analysis (${detailed ? 'detailed' : 'quick'})…`);
   const args = [
     'semgrep',
     'scan',
@@ -32,9 +32,9 @@ export async function runSast(workspaceDir, opts = {}) {
     doc = JSON.parse(result.stdout || '{}');
   } catch {
     return {
-      name: 'sast/semgrep',
+      name: 'sast',
       findings: [],
-      error: result.error || result.stderr?.slice(0, 200) || 'Could not parse semgrep JSON',
+      error: result.error || result.stderr?.slice(0, 200) || 'Could not parse code analysis output',
     };
   }
 
@@ -47,7 +47,7 @@ export async function runSast(workspaceDir, opts = {}) {
       severity: normalizeSeverity(extra.severity || meta.severity),
       confidence: (meta.confidence || 'medium').toLowerCase(),
       source: 'sast',
-      tool: 'semgrep',
+      tool: 'cybrot-sast',
       cwe_id: firstCwe(meta.cwe),
       file_path: stripSrc(r.path),
       line_number: r.start?.line ?? null,
@@ -59,7 +59,7 @@ export async function runSast(workspaceDir, opts = {}) {
     });
   });
 
-  return { name: 'sast/semgrep', findings, error: null };
+  return { name: 'sast', findings, error: null };
 }
 
 function firstCwe(cwe) {
