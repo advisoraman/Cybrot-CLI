@@ -71,6 +71,41 @@ Example config: [`cybrot.yml.example`](cybrot.yml.example).
 
 ---
 
+## Choose a scan type
+
+By default `cybrot scan` runs every layer enabled in `cybrot.yml`. Pass flags to run only what you need:
+
+| Goal | Command |
+|------|---------|
+| Full Gate | `cybrot scan --target http://localhost:3000` |
+| Source only (SAST) | `cybrot scan --sast` |
+| Secrets | `cybrot scan --secrets` |
+| Dependencies (SCA) | `cybrot scan --sca` |
+| Running app (DAST) | `cybrot scan --dast --target http://localhost:3000` |
+| Authenticated DAST | `cybrot scan --dast --target http://localhost:3000 --auth-bearer "$TEST_TOKEN"` |
+| Combine layers | `cybrot scan --sast --secrets --dast --target http://localhost:3000` |
+
+Auth options for DAST:
+
+```bash
+--auth-bearer <token>
+--auth-cookie "session=..."
+--auth-header "X-API-Key: test-key"
+--authorize          # required for non-local targets
+```
+
+Or toggle defaults in `cybrot.yml`:
+
+```yaml
+scans:
+  sast: true
+  secrets: true
+  dependencies: true
+  dast: true
+```
+
+---
+
 ## Agent skills
 
 Skills teach Cursor / Claude to run Cybrot Gate from chat.

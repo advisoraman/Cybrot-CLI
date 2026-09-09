@@ -48,9 +48,16 @@ Commands:
         --auth-cookie <c>  Authenticated DAST (Cookie header)
         --auth-header H:V  Authenticated DAST (custom header)
         --cloud            Legacy: upload source for cloud worker scan
-        --tier quick|detailed   (cloud mode, or semgrep breadth)
+        --tier quick|detailed   Code-analysis breadth
         --watch            (cloud mode) poll until done
         --name <n>
+
+  Examples:
+    cybrot scan --sast
+    cybrot scan --secrets --sca
+    cybrot scan --dast --target http://localhost:3000
+    cybrot scan --dast --target http://localhost:3000 --auth-bearer "$TOKEN"
+    cybrot scan --sast --secrets --dast --target http://localhost:3000
 
   cybrot status <scan-id>
   cybrot findings [id] [--scan <cloud-scan-id>] [--explain]
