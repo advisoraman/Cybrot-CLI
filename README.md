@@ -82,7 +82,7 @@ Example config: [`cybrot.yml.example`](cybrot.yml.example).
 
 ---
 
-## Agent skills (like StackHawk Wingman)
+## Agent skills
 
 StackHawk ships **agent skills** so Copilot / Claude can run HawkScan from chat.  
 Cybrot Gate ships the same idea under `.cursor/skills/` and `plugins/claude-code/skills/`.
