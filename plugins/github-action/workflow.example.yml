@@ -1,0 +1,49 @@
+# Example workflow — Cybrot Gate (StackHawk hawkscan-action equivalent)
+#
+# Option A: vendor Cybrot-CLI as a submodule at ./Cybrot-CLI
+# Option B: copy plugins/github-action into your repo
+# Secrets (optional): CYBROT_TOKEN
+
+name: Cybrot Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  cybrot-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout Cybrot CLI
+        uses: actions/checkout@v4
+        with:
+          repository: advisoraman/Cybrot-CLI
+          path: Cybrot-CLI
+
+      - name: Cybrot Gate scan
+        id: gate
+        uses: ./Cybrot-CLI/plugins/github-action
+        with:
+          path: .
+          layers: sast,secrets,sca
+          fail-on: high
+          format: sarif
+          upload: ${{ secrets.CYBROT_TOKEN != '' }}
+          cybrot-token: ${{ secrets.CYBROT_TOKEN }}
+          cybrot-api: ${{ vars.CYBROT_API || 'https://cybrot.com' }}
+          cli-path: Cybrot-CLI
+        continue-on-error: false
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: always() && steps.gate.outputs.sarif-path != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.gate.outputs.sarif-path }}
+        continue-on-error: true

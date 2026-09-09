@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Cybrot Gate: Scan",
+      "type": "shell",
+      "command": "cybrot scan --target ${input:cybrotTarget} --fail-on high",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Cybrot Gate: SAST only",
+      "type": "shell",
+      "command": "cybrot scan --sast --secrets --sca --no-upload --fail-on high",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cybrot Gate: Verify fixes",
+      "type": "shell",
+      "command": "cybrot verify --target ${input:cybrotTarget}",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cybrot Gate: Doctor",
+      "type": "shell",
+      "command": "cybrot doctor",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cybrot Gate: Init config",
+      "type": "shell",
+      "command": "cybrot init",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "cybrotTarget",
+      "type": "promptString",
+      "description": "Application URL for DAST",
+      "default": "http://localhost:3000"
+    }
+  ]
+}

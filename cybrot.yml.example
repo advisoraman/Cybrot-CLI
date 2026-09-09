@@ -1,0 +1,33 @@
+# Example Cybrot local scanner configuration
+# Copy to your app repo as cybrot.yml (or run: cybrot init)
+
+version: 1
+
+project:
+  name: my-application
+
+application:
+  target: http://localhost:3000
+
+scans:
+  dast: true
+  sast: true
+  secrets: true
+  dependencies: true
+
+dast:
+  crawl: true
+  max_duration: 5m
+  authentication:
+    enabled: false
+    type: none
+
+authentication:
+  enabled: false
+
+output:
+  format: terminal
+  upload_results: true
+
+gate:
+  fail_on: high

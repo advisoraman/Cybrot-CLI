@@ -1,0 +1,33 @@
+{
+  "name": "cybrot",
+  "version": "2.0.0",
+  "description": "Cybrot Gate CLI — local SAST/secrets/SCA/DAST via Docker, deploy decisions, cloud upload, CI plugins, and AI agent skills.",
+  "type": "module",
+  "bin": {
+    "cybrot": "./bin/cybrot.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "link": "npm link",
+    "start": "node ./bin/cybrot.mjs",
+    "doctor": "node ./bin/cybrot.mjs doctor"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/advisoraman/Cybrot-CLI.git"
+  },
+  "homepage": "https://github.com/advisoraman/Cybrot-CLI",
+  "license": "UNLICENSED",
+  "files": [
+    "bin",
+    "src",
+    "docker",
+    "ci",
+    "plugins",
+    ".cursor/skills",
+    "cybrot.yml.example",
+    "README.md"
+  ]
+}

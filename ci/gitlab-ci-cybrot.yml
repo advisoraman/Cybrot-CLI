@@ -1,0 +1,47 @@
+# GitLab CI — Cybrot Gate (Docker-mandatory)
+#
+# CI/CD variables (optional): CYBROT_TOKEN, CYBROT_API
+
+stages:
+  - security
+
+cybrot_gate:
+  stage: security
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: '/certs'
+  allow_failure: false
+  before_script:
+    - apk add --no-cache nodejs npm
+    - |
+      if [ -f docker/Dockerfile.gate-tools ]; then
+        docker build -f docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .
+        export CYBROT_TOOLS_IMAGE=cybrot/gate-tools:local
+      else
+        export CYBROT_TOOLS_IMAGE=ghcr.io/advisoraman/cybrot-gate-tools:latest
+      fi
+  script:
+    - |
+      BIN="node bin/cybrot.mjs"
+      set +e
+      CYBROT_TOOLS_IMAGE="${CYBROT_TOOLS_IMAGE}" $BIN scan --sast --secrets --sca \
+        --format json \
+        --fail-on high \
+        ${CYBROT_TOKEN:+--upload} \
+        ${CYBROT_TOKEN:---no-upload} \
+        | tee cybrot-results.json
+      STATUS=$?
+      set -e
+      if [ "$STATUS" = "2" ]; then
+        echo "Security gate failed (severity threshold)"
+        exit 2
+      fi
+      exit $STATUS
+  artifacts:
+    when: always
+    paths:
+      - cybrot-results.json
+      - .cybrot/
+    expire_in: 1 week

@@ -1,0 +1,124 @@
+name: 'Cybrot Gate'
+description: 'Run Cybrot Gate local security scan (SAST/secrets/SCA/DAST) with optional cloud upload and severity gate'
+author: 'Cybrot'
+
+inputs:
+  path:
+    description: 'Working directory to scan'
+    required: false
+    default: '.'
+  target:
+    description: 'Application URL for DAST (optional)'
+    required: false
+    default: ''
+  fail-on:
+    description: 'Severity gate: critical|high|medium|low|none'
+    required: false
+    default: 'high'
+  format:
+    description: 'Output format: terminal|json|sarif'
+    required: false
+    default: 'sarif'
+  upload:
+    description: 'Upload results to Cybrot Cloud (requires cybrot-token)'
+    required: false
+    default: 'false'
+  layers:
+    description: 'Comma list: sast,secrets,sca,dast — empty = all enabled in cybrot.yml'
+    required: false
+    default: 'sast,secrets,sca'
+  cybrot-api:
+    description: 'Cybrot API base URL'
+    required: false
+    default: 'https://cybrot.com'
+  cybrot-token:
+    description: 'JWT from cybrot login (secret)'
+    required: false
+    default: ''
+  cli-path:
+    description: 'Path to cybrot CLI package (monorepo) or empty if globally linked'
+    required: false
+    default: ''
+
+outputs:
+  sarif-path:
+    description: 'Path to written SARIF file'
+    value: ${{ steps.scan.outputs.sarif-path }}
+  exit-code:
+    description: 'CLI exit code (2 = gate failed)'
+    value: ${{ steps.scan.outputs.exit-code }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # Docker is provided by GitHub-hosted runners. Tools run in CYBROT_TOOLS_IMAGE.
+    - name: Build Cybrot Gate tools image (if Dockerfile present)
+      if: hashFiles('docker/Dockerfile.gate-tools') != '' || hashFiles('cli/docker/Dockerfile.gate-tools') != ''
+      shell: bash
+      run: |
+        if [ -f docker/Dockerfile.gate-tools ]; then
+          docker build -f docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .
+        else
+          docker build -f cli/docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .
+        fi
+        echo "CYBROT_TOOLS_IMAGE=cybrot/gate-tools:local" >> "$GITHUB_ENV"
+
+    - name: Resolve Cybrot CLI
+      id: cli
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.cli-path }}" ] && [ -f "${{ inputs.cli-path }}/bin/cybrot.mjs" ]; then
+          echo "bin=node ${{ inputs.cli-path }}/bin/cybrot.mjs" >> "$GITHUB_OUTPUT"
+        elif command -v cybrot >/dev/null; then
+          echo "bin=cybrot" >> "$GITHUB_OUTPUT"
+        elif [ -f "bin/cybrot.mjs" ]; then
+          echo "bin=node bin/cybrot.mjs" >> "$GITHUB_OUTPUT"
+        elif [ -f "cli/bin/cybrot.mjs" ]; then
+          echo "bin=node cli/bin/cybrot.mjs" >> "$GITHUB_OUTPUT"
+        else
+          echo "Cybrot CLI not found. Set inputs.cli-path or npm link cybrot." >&2
+          exit 1
+        fi
+
+    - name: Run Cybrot Gate
+      id: scan
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      env:
+        CYBROT_API: ${{ inputs.cybrot-api }}
+        CYBROT_TOKEN: ${{ inputs.cybrot-token }}
+        CYBROT_TOOLS_IMAGE: ${{ env.CYBROT_TOOLS_IMAGE || 'ghcr.io/advisoraman/cybrot-gate-tools:latest' }}
+      run: |
+        BIN='${{ steps.cli.outputs.bin }}'
+        ARGS=(scan --format '${{ inputs.format }}' --fail-on '${{ inputs.fail-on }}')
+        IFS=',' read -ra LAYERS <<< '${{ inputs.layers }}'
+        for L in "${LAYERS[@]}"; do
+          L=$(echo "$L" | tr -d ' ')
+          [ -n "$L" ] && ARGS+=("--$L")
+        done
+        if [ -n '${{ inputs.target }}' ]; then
+          ARGS+=(--target '${{ inputs.target }}')
+        fi
+        if [ '${{ inputs.upload }}' = 'true' ]; then
+          ARGS+=(--upload)
+        else
+          ARGS+=(--no-upload)
+        fi
+        set +e
+        if [ '${{ inputs.format }}' = 'sarif' ]; then
+          $BIN "${ARGS[@]}" > cybrot-gate.sarif
+          CODE=$?
+          echo "sarif-path=$PWD/cybrot-gate.sarif" >> "$GITHUB_OUTPUT"
+        else
+          $BIN "${ARGS[@]}"
+          CODE=$?
+          echo "sarif-path=" >> "$GITHUB_OUTPUT"
+        fi
+        echo "exit-code=$CODE" >> "$GITHUB_OUTPUT"
+        set -e
+        exit $CODE

@@ -1,0 +1,19 @@
+# Cybrot Gate — pre-commit plugin
+#
+# Add to your app's .pre-commit-config.yaml:
+
+repos:
+  - repo: local
+    hooks:
+      - id: cybrot-gate
+        name: Cybrot Gate (SAST + secrets)
+        entry: bash -c 'cybrot scan --sast --secrets --fail-on high --no-upload --format terminal || test $? -eq 0'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+        # Use pre-commit stage for faster SAST-only:
+        # stages: [pre-commit]
+
+# One-liner install for developers:
+#   brew install pre-commit   # or pip install pre-commit
+#   pre-commit install --hook-type pre-push

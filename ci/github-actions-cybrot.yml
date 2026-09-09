@@ -1,0 +1,68 @@
+# GitHub Actions — Cybrot Gate (Docker-mandatory)
+#
+# Copy to your app repo as .github/workflows/cybrot.yml
+# Or run from this Cybrot-CLI checkout.
+# Optional secrets: CYBROT_TOKEN, CYBROT_API
+
+name: Cybrot Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  cybrot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Cybrot CLI + tools image
+        run: |
+          if [ -f "docker/Dockerfile.gate-tools" ]; then
+            docker build -f docker/Dockerfile.gate-tools -t cybrot/gate-tools:local .
+            echo "CYBROT_TOOLS_IMAGE=cybrot/gate-tools:local" >> "$GITHUB_ENV"
+          else
+            echo "CYBROT_TOOLS_IMAGE=ghcr.io/advisoraman/cybrot-gate-tools:latest" >> "$GITHUB_ENV"
+          fi
+          npm install -g . || npm link . || true
+          if ! command -v cybrot >/dev/null; then
+            echo "CYBROT_BIN=node $(pwd)/bin/cybrot.mjs" >> "$GITHUB_ENV"
+          else
+            echo "CYBROT_BIN=cybrot" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run Cybrot Gate (SAST + secrets + SCA)
+        env:
+          CYBROT_TOKEN: ${{ secrets.CYBROT_TOKEN }}
+          CYBROT_API: ${{ secrets.CYBROT_API }}
+        run: |
+          BIN="${CYBROT_BIN:-cybrot}"
+          set +e
+          $BIN scan --sast --secrets --sca \
+            --format sarif \
+            --fail-on high \
+            ${CYBROT_TOKEN:+--upload} \
+            ${CYBROT_TOKEN:---no-upload} \
+            > cybrot.sarif
+          STATUS=$?
+          set -e
+          if [ "$STATUS" = "2" ]; then
+            echo "Security gate failed (severity threshold)"
+            exit 2
+          fi
+          exit $STATUS
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cybrot.sarif
+        continue-on-error: true
